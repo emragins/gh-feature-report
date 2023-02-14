@@ -1,0 +1,27 @@
+{
+  "target": "Visual Studio 2022",
+  "build": "1.2.3",
+  "correlationId": "49837437",
+  "datetime": "2023-01-30T12:12:12",
+  "total": 12,
+  "totalPassed": 1,
+  "totalFailed": 0,
+  "totalIgnored": 0,
+  "specs": [
+    {
+      "id": "auth.login.test1",
+      "status": "passed",
+      "fulfilled_by": "GitHub.Copilot.SpecSample.TestA"
+    },
+    {
+      "id": "auth.login.test2",
+      "status": "failed",
+      "fulfilled_by": "GitHub.Copilot.SpecSample.TestB"
+    },
+    {
+      "id": "auth.login.test3",
+      "status": "ignored",
+      "fulfilled_by": "GitHub.Copilot.SpecSample.TestC"
+    }
+  ]
+}

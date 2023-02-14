@@ -1,16 +1,28 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import {transform} from './transform'
+import * as fs from 'fs/promises'
+
+const DefaultDepth = 1
 
 async function run(): Promise<void> {
+  console.log('test')
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    const input = core.getInput('inputFile', {required: true})
+    core.debug(`Reading input from ${input}`)
+    const file = await fs.readFile(input)
+    const json = JSON.parse(file.toString())
+    if (!json) throw new Error(`Invalid JSON input: ${input}`)
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const depth = parseInt(core.getInput('depth'), 10) || DefaultDepth
+    const dataRollup = await transform(json, depth)
 
-    core.setOutput('time', new Date().toTimeString())
+    const formatted = JSON.stringify(dataRollup, null, 2)
+
+    // write file
+    const output = core.getInput('outputFile', {required: true})
+    core.debug(`Writing output to ${output}`)
+    fs.writeFile(output, formatted)
+
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

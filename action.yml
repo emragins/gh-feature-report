@@ -2,10 +2,16 @@ name: 'Your name here'
 description: 'Provide a description here'
 author: 'Your name or organization here'
 inputs:
-  milliseconds: # change this
+  inputFile:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'source json file for summarization'
+  depth:
+    required: false
+    description: 'level at which to roll-up specs. ie. specs formatted as "a.b.c" with a depth of "1", will summarize at the "a" level.'
+    default: 1
+  outputFile:
+    required: true
+    description: 'output json file'
 runs:
   using: 'node16'
-  main: 'dist/index.js'
+  main: 'dist/main.js'

@@ -1,10 +1,10 @@
 import {transform, splitIdByDepth} from '../src/transform'
 import {describe, it, expect, test} from '@jest/globals'
-import {Report, Spec, Status} from '../src/__types__'
+import {Report, Spec, Status} from '../src/types'
 
 test('throws invalid file', async () => {})
 
-var input: Report = {
+let input: Report = {
   target: 'target_',
   build: 'build_',
   correlationId: 'correlationId_',
@@ -25,23 +25,30 @@ describe('flat spec', () => {
   input.specs.push(newSpec(2, 1, 1, Status.Passed))
   input.specs.push(newSpec(2, 1, 2, Status.Passed))
 
-
   it('copies summary data', async () => {
     const expected = {
       target: 'target_',
       build: 'build_',
       correlationId: 'correlationId_',
       datetime: 'datetime_',
-      total: 1,
-      totalPassed: 2,
-      totalFailed: 3,
-      totalIgnored: 4
     }
 
     const actual = await transform(input, 1)
 
     expect(actual).toMatchObject(expected)
   })
+
+  it('sums total values itself', async () => {
+    const actual = await transform(input, 1)
+    const expected = {
+      total: 7,
+      totalPassed: 5,
+      totalFailed: 2,
+      totalIgnored: 0
+    }
+
+    expect(actual).toMatchObject(expected)
+  });
 
   it('lists rollup', async () => {
     const actual = await transform(input, 1)
