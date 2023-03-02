@@ -1,77 +1,65 @@
 import {Report, Rollup, RollupItem, RollupSummary, Status} from './types'
 
-export async function transform(
+export function reduce(
   specInput: Report,
-  rollupLevel: number
-): Promise<Rollup> {
-  return new Promise(resolve => {
-    if (specInput == null) {
-      throw new Error('specInput is null')
-    }
+  depth: number,
+  results: Rollup = null
+): Rollup {
+  if(specInput == null) return results;
+  if(specInput.specs == null) return results;
 
-    const [rollupItems, rollupSummary] = performRollup(specInput, rollupLevel)
-
-    const rollup: Rollup = {
+  if (results == null) {
+    results = {
       target: specInput.target,
       build: specInput.build,
       correlationId: specInput.correlationId,
       datetime: specInput.datetime,
-      total: rollupSummary.total,
-      totalPassed: rollupSummary.totalPassed,
-      totalFailed: rollupSummary.totalFailed,
-      totalIgnored: rollupSummary.totalIgnored,
-      rollup: rollupItems
+      total: 0,
+      totalPassed: 0,
+      totalFailed: 0,
+      totalIgnored: 0,
+      rollup: []
+    }
+  }
+
+  return specInput.specs.reduce((acc: Rollup, spec) => {
+    const id = getDepthAppropriateSpecId(spec.id, depth)
+
+    // handle summary-level rollup
+    acc.total++
+    if (spec.status === Status.Passed) {
+      acc.totalPassed++
+    } else if (spec.status === Status.Failed) {
+      acc.totalFailed++
+    } else if (spec.status === Status.Ignored) {
+      acc.totalIgnored++
     }
 
-    resolve(rollup)
-  })
-}
-
-function performRollup(
-  specInput: Report,
-  rollupLevel: number
-): [RollupItem[], RollupSummary] {
-  return specInput.specs.reduce(
-    (acc: [RollupItem[], RollupSummary], spec) => {
-      const id = splitIdByDepth(spec.id, rollupLevel)
-
-      // handle summary-level rollup
-      acc[1].total++
+    // handle item-level rollup
+    const item = acc.rollup.find(x => x.id === id)
+    if (item) {
+      item.numTotal++
       if (spec.status === Status.Passed) {
-        acc[1].totalPassed++
+        item.numPass++
       } else if (spec.status === Status.Failed) {
-        acc[1].totalFailed++
-      } else if (spec.status === Status.Ignored) {
-        acc[1].totalIgnored++
+        item.numFail++
+        item.failures.push(spec.id)
       }
-
-      // handle item-level rollup
-      const item = acc[0].find(x => x.id === id)
-      if (item) {
-        item.numTotal++
-        if (spec.status === Status.Passed) {
-          item.numPass++
-        } else if (spec.status === Status.Failed) {
-          item.numFail++
-          item.failures.push(spec.id)
-        }
-      } else {
-        const newItem = {
-          id,
-          numTotal: 1,
-          numPass: spec.status === Status.Passed ? 1 : 0,
-          numFail: spec.status === Status.Failed ? 1 : 0,
-          failures: spec.status === Status.Failed ? [spec.id] : []
-        }
-        acc[0].push(newItem)
+    } else {
+      const newItem = {
+        id,
+        numTotal: 1,
+        numPass: spec.status === Status.Passed ? 1 : 0,
+        numFail: spec.status === Status.Failed ? 1 : 0,
+        failures: spec.status === Status.Failed ? [spec.id] : []
       }
-      return acc
-    },
-    [[], {total: 0, totalPassed: 0, totalFailed: 0, totalIgnored: 0}]
-  )
+      acc.rollup.push(newItem)
+    }
+    return acc
+  }, results)
 }
 
-export function splitIdByDepth(id: string, depth: number): string {
+export function getDepthAppropriateSpecId(id: string, depth: number): string {
   if (depth === 0) {
     return ''
   } else {
