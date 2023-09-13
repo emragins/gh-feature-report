@@ -11,17 +11,17 @@
     {
       "id": "auth.login.test1",
       "status": "passed",
-      "fulfilled_by": "GitHub.Copilot.SpecSample.TestA"
+      "fulfilled_by": "SpecSample.TestA"
     },
     {
       "id": "auth.login.test2",
       "status": "failed",
-      "fulfilled_by": "GitHub.Copilot.SpecSample.TestB"
+      "fulfilled_by": "SpecSample.TestB"
     },
     {
       "id": "auth.login.test3",
       "status": "ignored",
-      "fulfilled_by": "GitHub.Copilot.SpecSample.TestC"
+      "fulfilled_by": "SpecSample.TestC"
     }
   ]
 }
